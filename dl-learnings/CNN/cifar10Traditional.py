@@ -158,21 +158,23 @@ import numpy as np
 #%%
 X = data_batch1[b"data"] 
 
-
+# Out of 10,000 images 32 * 32 picture and 3 bits 
+# 10,000 images are broke down into 3 pieces
+# RGB
+# Transpose ( 0 - image , 2 is one 32 , 3 is another 32 and 1 is 3 pieces)
+# "unit8" - Ram size
 #%%
 X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
 
-
+# 0 to 255 float values
 #%%
 X[0].max()
 
+#%%
+plt.imshow(X[4])
 
 #%%
 (X[0]/255).max()
-
-
-#%%
-plt.imshow(X[0])
 
 
 #%%
@@ -187,7 +189,8 @@ plt.imshow(X[50])
 # 
 # ** Use the provided code below to help with dealing with grabbing the
 #  next batch once you've gotten ready to create the Graph Session. 
-# Can you break down how it works? **
+# 10 possible lables , 
+# Which denotes data of car or dog [0,1,1,0,1,*****]
 
 #%%
 def one_hot_encode(vec, vals=10):
@@ -200,9 +203,10 @@ def one_hot_encode(vec, vals=10):
     return out
 
 
+#
 #%%
 class CifarHelper():
-    
+    # Initializing variables
     def __init__(self):
         self.i = 0
         
@@ -219,9 +223,11 @@ class CifarHelper():
         
         print("Setting Up Training Images and Labels")
         
+        # filling the training images
         self.training_images = np.vstack([d[b"data"] for d in self.all_train_batches])
         train_len = len(self.training_images)
         
+        #
         self.training_images = self.training_images.reshape(train_len,3,32,32).transpose(0,2,3,1)/255
         self.training_labels = one_hot_encode(np.hstack([d[b"labels"] for d in self.all_train_batches]), 10)
         
@@ -233,11 +239,13 @@ class CifarHelper():
         self.test_images = self.test_images.reshape(test_len,3,32,32).transpose(0,2,3,1)/255
         self.test_labels = one_hot_encode(np.hstack([d[b"labels"] for d in self.test_batch]), 10)
 
-        
+    #  
     def next_batch(self, batch_size):
+        # Just first 100 images
         x = self.training_images[self.i:self.i+batch_size].reshape(100,32,32,3)
         y = self.training_labels[self.i:self.i+batch_size]
         self.i = (self.i + batch_size) % len(self.training_images)
+        # x is the image and y is the label
         return x, y
 
 #%% [markdown]
@@ -248,8 +256,7 @@ class CifarHelper():
 ch = CifarHelper()
 ch.set_up_images()
 
-# During your session to grab the next batch use this line
-# (Just like we did for mnist.train.next_batch)
+
 # batch = ch.next_batch(100)
 
 #%% [markdown]
@@ -272,7 +279,8 @@ x = tf.placeholder(tf.float32,shape=[None,32,32,3])
 y_true = tf.placeholder(tf.float32,shape=[None,10])
 
 #%% [markdown]
-# ** Create one more placeholder called hold_prob. No need for shape here. This placeholder will just hold a single probability for the dropout. **
+# ** Create one more placeholder called hold_prob. No need for shape here. 
+# This placeholder will just hold a single probability for the dropout. **
 
 #%%
 hold_prob = tf.placeholder(tf.float32)
@@ -289,6 +297,7 @@ hold_prob = tf.placeholder(tf.float32)
 # * convolutional_layer
 # * normal_full_layer
 
+# 
 #%%
 def init_weights(shape):
     init_random_dist = tf.truncated_normal(shape, stddev=0.1)
@@ -299,8 +308,10 @@ def init_bias(shape):
     return tf.Variable(init_bias_vals)
 
 def conv2d(x, W):
+    # reducing 32 * 32 * 3 into 2D
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
+# getting the max value
 def max_pool_2by2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                           strides=[1, 2, 2, 1], padding='SAME')
@@ -310,6 +321,7 @@ def convolutional_layer(input_x, shape):
     b = init_bias([shape[3]])
     return tf.nn.relu(conv2d(input_x, W) + b)
 
+# fully connected layer inuput will be flatten
 def normal_full_layer(input_layer, size):
     input_size = int(input_layer.get_shape()[1])
     W = init_weights([input_size, size])
@@ -324,7 +336,9 @@ def normal_full_layer(input_layer, size):
 # 
 #         convo_1 = convolutional_layer(x,shape=[4,4,3,32])
 
+# STEP 1
 #%%
+# 3 channels , 32 - pixels each, 4 - filter size, 4 filter size
 convo_1 = convolutional_layer(x,shape=[4,4,3,32])
 convo_1_pooling = max_pool_2by2(convo_1)
 
@@ -338,21 +352,22 @@ convo_2_pooling = max_pool_2by2(convo_2)
 #%% [markdown]
 # ** Now create a flattened layer by reshaping the pooling layer into [-1,8 \* 8 \* 64] or [-1,4096] **
 
-#%%
-8*8*64
-
-
+# STEP 2 
+# 8*8*64 bytes 4096
 #%%
 convo_2_flat = tf.reshape(convo_2_pooling,[-1,8*8*64])
 
 #%% [markdown]
-# ** Create a new full layer using the normal_full_layer function and passing in your flattend convolutional 2 layer with size=1024. (You could also choose to reduce this to something like 512)**
+# ** Create a new full layer using the normal_full_layer function and
+#  passing in your flattend convolutional 2 layer with size=1024. (You could also choose to reduce this to something like 512)**
 
+# STEP 3 
 #%%
 full_layer_one = tf.nn.relu(normal_full_layer(convo_2_flat,1024))
 
 #%% [markdown]
-# ** Now create the dropout layer with tf.nn.dropout, remember to pass in your hold_prob placeholder. **
+# ** Now create the dropout layer with tf.nn.dropout, 
+# remember to pass in your hold_prob placeholder. **
 
 #%%
 full_one_dropout = tf.nn.dropout(full_layer_one,keep_prob=hold_prob)
@@ -360,14 +375,17 @@ full_one_dropout = tf.nn.dropout(full_layer_one,keep_prob=hold_prob)
 #%% [markdown]
 # ** Finally set the output to y_pred by passing in the dropout layer into the normal_full_layer function. The size should be 10 because of the 10 possible labels**
 
+# 10 labels
 #%%
 y_pred = normal_full_layer(full_one_dropout,10)
+y_pred
 
 #%% [markdown]
 # ### Loss Function
 # 
 # ** Create a cross_entropy loss function **
-
+# Improve gain 
+# Magic happens heres . Labels is nothing but dog or car
 #%%
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true,logits=y_pred))
 
@@ -375,6 +393,7 @@ cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_
 # ### Optimizer
 # ** Create the optimizer using an Adam Optimizer. **
 
+# redues the entropy
 #%%
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
 train = optimizer.minimize(cross_entropy)
@@ -393,7 +412,7 @@ init = tf.global_variables_initializer()
 #%%
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-
+    # 500 * 100 = ?
     for i in range(500):
         batch = ch.next_batch(100)
         sess.run(train, feed_dict={x: batch[0], y_true: batch[1], hold_prob: 0.5})
