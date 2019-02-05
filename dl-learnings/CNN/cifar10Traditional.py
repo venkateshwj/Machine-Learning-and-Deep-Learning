@@ -55,38 +55,33 @@
 # Here the image classification happens
 
 # Lets code
-#%% Change working directory from the workspace root to the ipynb file location. Turn this addition off with the DataScience.changeDirOnImportExport setting
 #%%
 import os
 
 #%% [markdown]
-# ## CNN-Exercise-Solutions
-# We'll be using the CIFAR-10 dataset, which is very famous dataset for image recognition! 
 # 
-# The CIFAR-10 dataset consists of 60000 32x32 colour images in 10 classes, with 6000 images per class. There are 50000 training images and 10000 test images. 
+# Let's use CIFAR-10 dataset
 # 
-# The dataset is divided into five training batches and one test batch, each with 10000 images. The test batch contains exactly 1000 randomly-selected images from each class. The training batches contain the remaining images in random order, but some training batches may contain more images from one class than another. Between them, the training batches contain exactly 5000 images from each class. 
+# The CIFAR-10 dataset consists of 60000 32x32 colour images in 10 classes, 
+# with 6000 images per class. 
+# There are 50000 training images and 10000 test images. 
+# The dataset is divided into five training batches and one test batch, each with 10000 images. 
+# The test batch contains exactly 1000 randomly-selected images from each class. 
+# The training batches contain the remaining images in random order, 
+# but some training batches may contain more images from one class than another. 
+# Between them, the training batches contain exactly 5000 images from each class. 
 # 
 #%% [markdown]
-# ## Step 0: Get the Data
-# 
-# 
-#%% [markdown]
-# ** Download the data for CIFAR from here: https://www.cs.toronto.edu/~kriz/cifar.html **
-# 
-# **Specifically the CIFAR-10 python version link: https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz **
-# 
-# ** Remember the directory you save the file in! **
-
+# Step 0: Get the Data
 #%%
 # Put file path as a string here
 CIFAR_DIR = 'C:/F-Folder/Machine-Learning---Real-learning/data/cifar-10-batches-py/'
 
 #%% [markdown]
-# The archive contains the files data_batch_1, data_batch_2, ..., data_batch_5, as well as test_batch. Each of these files is a Python "pickled" object produced with cPickle. 
+# The archive contains the files data_batch_1, data_batch_2, ..., data_batch_5, as well as test_batch. 
+# Each of these files is a Python "pickled" object produced with cPickle. 
 # 
 # ** Load the Data. Use the Code Below to load the data: **
-
 #%%
 def unpickle(file):
     import pickle
@@ -120,11 +115,15 @@ test_batch = all_data[6]
 
 #%%
 batch_meta
+# CHeck for images
+data_batch1
 
 #%% [markdown]
 # ** Why the 'b's in front of the string? **
-# Bytes literals are always prefixed with 'b' or 'B'; they produce an instance of the bytes type instead of the str type. They may only contain ASCII characters; bytes with a numeric value of 128 or greater must be expressed with escapes.
-# 
+# Bytes literals are always prefixed with 'b' or 'B'; 
+# they produce an instance of the bytes type instead of the str type. 
+# They may only contain ASCII characters; 
+# bytes with a numeric value of 128 or greater must be expressed with escapes.
 # https://stackoverflow.com/questions/6269765/what-does-the-b-character-do-in-front-of-a-string-literal
 
 #%%
@@ -132,12 +131,18 @@ data_batch1.keys()
 
 #%% [markdown]
 # Loaded in this way, each of the batch files contains a dictionary with the following elements:
-# * data -- a 10000x3072 numpy array of uint8s. Each row of the array stores a 32x32 colour image. The first 1024 entries contain the red channel values, the next 1024 the green, and the final 1024 the blue. The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
-# * labels -- a list of 10000 numbers in the range 0-9. The number at index i indicates the label of the ith image in the array data.
+# * data -- a 10000x3072 numpy array of uint8s. 
+# Each row of the array stores a 32x32 colour image. 
+# The first 1024 entries contain the red channel values, the next 1024 the green, 
+# and the final 1024 the blue. The image is stored in row-major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
+# * labels -- a list of 10000 numbers in the range 0-9. 
+# The number at index i indicates the label of the ith image in the array data.
 # 
-# The dataset contains another file, called batches.meta. It too contains a Python dictionary object. It has the following entries:
+# The dataset contains another file, called batches.meta. 
+# It too contains a Python dictionary object. It has the following entries:
 # 
-# * label_names -- a 10-element list which gives meaningful names to the numeric labels in the labels array described above. For example, label_names[0] == "airplane", label_names[1] == "automobile", etc.
+# * label_names -- a 10-element list which gives meaningful names to the numeric labels
+#  in the labels array described above. For example, label_names[0] == "airplane", label_names[1] == "automobile", etc.
 #%% [markdown]
 # ### Display a single image using matplotlib.
 # 
@@ -180,7 +185,9 @@ plt.imshow(X[50])
 #%% [markdown]
 # # Helper Functions for Dealing With Data.
 # 
-# ** Use the provided code below to help with dealing with grabbing the next batch once you've gotten ready to create the Graph Session. Can you break down how it works? **
+# ** Use the provided code below to help with dealing with grabbing the
+#  next batch once you've gotten ready to create the Graph Session. 
+# Can you break down how it works? **
 
 #%%
 def one_hot_encode(vec, vals=10):
