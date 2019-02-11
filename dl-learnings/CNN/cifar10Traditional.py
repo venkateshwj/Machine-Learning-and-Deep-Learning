@@ -10,6 +10,8 @@
 #    - Relu layer
 #    - Pooling layer 
 #    - Fully connected layer.
+
+#  
 #         CL        RL        PL
 #   IL      O        O         O
 #   O       O        O         O
@@ -89,7 +91,7 @@ def unpickle(file):
         cifar_dict = pickle.load(fo, encoding='bytes')
     return cifar_dict
 
-
+# 60000 
 #%%
 dirs = ['batches.meta','data_batch_1','data_batch_2','data_batch_3','data_batch_4','data_batch_5','test_batch']
 
@@ -178,7 +180,7 @@ plt.imshow(X[4])
 
 
 #%%
-plt.imshow(X[1])
+plt.imshow(X[45])
 
 
 #%%
